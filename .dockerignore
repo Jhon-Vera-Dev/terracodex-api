@@ -4,6 +4,7 @@ docs
 .idea
 *.iml
 compose.yaml
+deploy
 HELP.md
 .env
 .env.*

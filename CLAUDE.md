@@ -33,4 +33,4 @@ Java 21, Spring Boot 4.1, Spring Modulith 2.1, JPA + Flyway, JWT (HS256). Arquit
 - `./mvnw test` corre todo (sin Docker).
 - `./mvnw spring-boot:run` levanta el perfil `local` (H2). Admin inicial: admin / Admin123*.
 - Perfil `dev`: PostgreSQL con `compose.yaml`.
-- Producción: VPS propio en Hostinger con Dokploy (Dockerfile + PostgreSQL), guía en `docs/despliegue-dokploy.md`, variables en `.env.ejemplo`. La cuenta de Hostinger es compartida: nunca actuar sobre ella (VPS, DNS, firewall) sin confirmación explícita, y nunca en el VPS de app-zonal (`srv1608280`).
+- Producción: VPS de Hostinger (76.13.225.20) con Docker Compose (`deploy/`: PostgreSQL + API + Caddy), guía en `docs/despliegue-docker.md`, variables en `deploy/.env.ejemplo`. La cuenta de Hostinger es compartida: nunca actuar sobre ella (VPS, DNS, firewall) sin confirmación explícita, y nunca en el VPS de app-zonal (`srv1608280`).
