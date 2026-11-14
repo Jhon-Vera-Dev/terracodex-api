@@ -35,6 +35,8 @@ docker run --rm \
     set -e
     command -v uv >/dev/null || [ -x /root/.local/bin/uv ] || curl -LsSf https://astral.sh/uv/install.sh | sh
     export PATH=/root/.local/bin:$PATH
+    # Flutter se descomprime con otro dueño (uid del archivo): sin esto git lo rechaza ("dubious ownership")
+    git config --global --add safe.directory "*"
     uv run --group dev flet build apk --yes
   '
 
