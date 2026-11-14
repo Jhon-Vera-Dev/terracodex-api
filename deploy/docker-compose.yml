@@ -67,6 +67,8 @@ services:
       DOMINIO: ${DOMINIO:-:80}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # APK de la app (deploy/apk/construir-apk.sh), servido en /descargas/
+      - ./descargas:/srv/descargas:ro
       - caddy_data:/data
       - caddy_config:/config
 

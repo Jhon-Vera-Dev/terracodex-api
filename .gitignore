@@ -39,3 +39,6 @@ build/
 *.jks
 *.p12
 *.pem
+
+### APK generado en el VPS ###
+deploy/descargas/
