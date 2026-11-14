@@ -34,3 +34,4 @@ Java 21, Spring Boot 4.1, Spring Modulith 2.1, JPA + Flyway, JWT (HS256). Arquit
 - `./mvnw spring-boot:run` levanta el perfil `local` (H2). Admin inicial: admin / Admin123*.
 - Perfil `dev`: PostgreSQL con `compose.yaml`.
 - Producción: VPS de Hostinger (76.13.225.20) con Docker Compose (`deploy/`: PostgreSQL + API + Caddy), guía en `docs/despliegue-docker.md`, variables en `deploy/.env.ejemplo`. La cuenta de Hostinger es compartida: nunca actuar sobre ella (VPS, DNS, firewall) sin confirmación explícita, y nunca en el VPS de app-zonal (`srv1608280`).
+- `python3 scripts/seed/cargar_usuarios.py --api <url>` carga por el API los usuarios de `scripts/seed/usuarios.json` (idempotente). Pide la contraseña del admin y la inicial de los usuarios (o `TERRACODEX_ADMIN_CLAVE` / `TERRACODEX_CLAVE_INICIAL`); las contraseñas nunca van en el JSON.

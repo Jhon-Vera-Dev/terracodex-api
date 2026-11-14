@@ -1,0 +1,7 @@
+{
+  "usuarios": [
+    { "login": "gvera", "descripcion": "gvera", "roles": ["ADMIN"], "isWeb": true, "isMovil": true },
+    { "login": "hventura", "descripcion": "hventura", "roles": ["ADMIN"], "isWeb": true, "isMovil": true },
+    { "login": "vorigundo", "descripcion": "vorigundo", "roles": ["ADMIN"], "isWeb": true, "isMovil": true }
+  ]
+}

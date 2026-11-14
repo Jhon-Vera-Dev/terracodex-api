@@ -42,6 +42,18 @@ curl -X POST http://76.13.225.20/api/auth/login -H 'Content-Type: application/js
 
 Sin dominio todo va por HTTP: sirve para probar, pero las contraseñas viajan sin cifrar.
 
+## 3b. Usuarios iniciales
+
+Con el API arriba, desde el VPS (o desde tu PC cambiando `--api`):
+
+```bash
+cd /opt/terracodex
+python3 scripts/seed/cargar_usuarios.py --api http://localhost
+```
+
+Pide la contraseña de `admin` y la contraseña inicial de los usuarios nuevos. Los usuarios y roles están en
+`scripts/seed/usuarios.json` (sin contraseñas). Es idempotente: los que ya existen se saltan.
+
 ## 4. Dominio y HTTPS
 
 1. DNS: registro `A` de `api.tudominio.com` → `76.13.225.20`.
