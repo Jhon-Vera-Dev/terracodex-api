@@ -1,0 +1,9 @@
+target
+docs
+.git
+.idea
+*.iml
+compose.yaml
+HELP.md
+.env
+.env.*

@@ -1,0 +1,10 @@
+# Infraestructura local para el perfil "dev" (./mvnw spring-boot:run -Dspring-boot.run.profiles=dev).
+services:
+  postgres:
+    image: 'postgres:17-alpine'
+    environment:
+      POSTGRES_DB: terracodex
+      POSTGRES_USER: terracodex
+      POSTGRES_PASSWORD: terracodex
+    ports:
+      - '5432:5432'

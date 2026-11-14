@@ -1,0 +1,100 @@
+spring:
+  application:
+    name: terracodex-api
+  profiles:
+    default: local
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  mvc:
+    problemdetails:
+      # Los errores usan ApiResponse (shared.infrastructure.adapter.input.rest.ApiExceptionHandler)
+      enabled: false
+  docker:
+    compose:
+      enabled: false
+  modulith:
+    events:
+      # Outbox: cada evento se guarda en event_publication dentro de la transacción del caso de uso
+      jdbc:
+        schema-initialization:
+          enabled: true
+      republish-outstanding-events-on-restart: true
+
+app:
+  zona-horaria: America/Lima
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
+  seguridad:
+    jwt:
+      emisor: terracodex-api
+      # Clave HS256 de al menos 32 caracteres. Obligatoria fuera de local/dev.
+      secreto: ${JWT_SECRET:}
+      # Access token corto; se renueva con el refresh token sin volver a pedir la contraseña
+      expiracion: ${JWT_EXPIRACION:15m}
+    sesion:
+      # Vida del refresh token; se extiende en cada renovación
+      duracion: ${SESION_DURACION:7d}
+    admin-inicial:
+      # Se crea al arrancar solo si no hay usuarios. Vacío: no se crea.
+      login: ${ADMIN_LOGIN:admin}
+      contrasena: ${ADMIN_PASSWORD:}
+
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,modulith
+
+---
+# Sin Docker: H2 en memoria. Es el perfil por defecto.
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: jdbc:h2:mem:terracodex;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+app:
+  seguridad:
+    jwt:
+      secreto: ${JWT_SECRET:solo-desarrollo-local-no-usar-en-produccion-0123456789}
+    admin-inicial:
+      contrasena: ${ADMIN_PASSWORD:Admin123*}
+
+---
+# Con Docker: levanta compose.yaml (PostgreSQL).
+spring:
+  config:
+    activate:
+      on-profile: dev
+  docker:
+    compose:
+      enabled: true
+      lifecycle-management: start-only
+app:
+  seguridad:
+    jwt:
+      secreto: ${JWT_SECRET:solo-desarrollo-local-no-usar-en-produccion-0123456789}
+    admin-inicial:
+      contrasena: ${ADMIN_PASSWORD:Admin123*}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+server:
+  forward-headers-strategy: framework
