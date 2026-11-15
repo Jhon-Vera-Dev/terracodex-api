@@ -105,7 +105,10 @@ services:
       # Vacío: sirve por HTTP en la IP (solo para probar). Con dominio: HTTPS automático (Let's Encrypt).
       DOMINIO: ${DOMINIO:-:80}
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Carpeta y no el archivo suelto: así Caddy ve el Caddyfile nuevo tras un git pull o un tar
+      - ./caddy:/etc/caddy:ro
+      # Landing estática servida en la raíz del dominio
+      - ./landing:/srv/landing:ro
       # APK de la app (deploy/apk/construir-apk.sh), servido en /descargas/
       - ./descargas:/srv/descargas:ro
       - caddy_data:/data

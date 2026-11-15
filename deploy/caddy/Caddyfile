@@ -13,7 +13,7 @@
 		-Server
 	}
 
-	# Solo se publica el API y el health; el resto del actuator no sale a internet (esas rutas caen en la web)
+	# Solo se publica el API y el health; el resto del actuator no sale a internet
 	@publico path /api/* /actuator/health /actuator/health/*
 	handle @publico {
 		request_body {
@@ -32,9 +32,16 @@
 		file_server
 	}
 
-	# Versión web de la app (contenedor web, Flet). Caddy pasa el WebSocket de cada sesión sin configuración extra.
-	# Si el contenedor no está levantado (perfil "web" sin publicar), Caddy responde 502.
-	handle {
+	# App TerraCode en el navegador (contenedor web, Flet, servida bajo /app/). Caddy pasa el WebSocket de cada
+	# sesión sin configuración extra. Si el contenedor no está levantado (perfil "web"), responde 502.
+	@app path /app /app/*
+	handle @app {
 		reverse_proxy web:8551
+	}
+
+	# Landing (deploy/landing, estática) en la raíz del dominio
+	handle {
+		root * /srv/landing
+		file_server
 	}
 }

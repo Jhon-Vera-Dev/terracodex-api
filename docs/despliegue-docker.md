@@ -103,14 +103,19 @@ admin le ponga una.
 No hace falta un cliente Android ni la huella SHA-1 del APK: la app abre Google en el navegador y el backend hace el
 canje (flujo de código de autorización). Sin estas variables, «Continuar con Google» responde «no está configurado».
 
-## 8. Versión web (Flet)
+## 8. Landing y versión web (Flet)
 
-La misma app de D:\TerraCode corre como sitio web en la raíz del dominio (`https://api.tudominio.com/`): el
-contenedor `web` ejecuta la app en Python (Flet en modo servidor) y cada navegador se conecta por WebSocket. Caddy
-envía a `web` todo lo que no sea `/api/*`, `/actuator/health` o `/descargas/*`. Habla con la API por la red interna
-(`http://api:8080`), así que no necesita CORS.
+- `https://<DOMINIO>/`: landing estática (`deploy/landing`, copia adaptada de la de TerraSprout). Caddy la sirve
+  directo desde la carpeta, sin contenedor. Sus botones llevan a la app (`/app/`) y al APK (`/descargas/`).
+- `https://<DOMINIO>/app/`: la app de D:\TerraCode en el navegador. El contenedor `web` la ejecuta en Python (Flet
+  en modo servidor) y cada navegador se conecta por WebSocket. Habla con la API por la red interna
+  (`http://api:8080`), así que no necesita CORS.
 
-Usa el mismo zip del APK (contenido de D:\TerraCode sin `.venv`, `build` ni `.git`):
+Caddy lee su configuración de la carpeta `deploy/caddy`, montada entera: así ve el `Caddyfile` nuevo después de un
+`git pull` o de descomprimir el código encima. Para aplicar cambios del Caddyfile o de la landing:
+`docker compose -f deploy/docker-compose.yml exec caddy caddy reload --config /etc/caddy/Caddyfile`.
+
+La app web usa el mismo zip del APK (contenido de D:\TerraCode sin `.venv`, `build` ni `.git`):
 
 ```bash
 bash deploy/web/publicar-web.sh /opt/terracode-src.zip

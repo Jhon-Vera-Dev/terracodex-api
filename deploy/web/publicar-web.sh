@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Publica la versión web de TerraCode (Flet) en https://<DOMINIO>/
+# Publica la versión web de TerraCode (Flet) en https://<DOMINIO>/app/
 #
 #   bash deploy/web/publicar-web.sh /opt/terracode-src.zip
 #
@@ -23,7 +23,10 @@ fi
 
 echo "[$(date +%T)] Construyendo y arrancando el contenedor web..."
 docker compose -f "$RAIZ/deploy/docker-compose.yml" --profile web up -d --build web
-# Caddy toma el Caddyfile actualizado (ruta / -> web) sin cortar el HTTPS
+# Primero valida el Caddyfile con la misma imagen: si tiene un error, para aquí y Caddy sigue con el anterior
+docker compose -f "$RAIZ/deploy/docker-compose.yml" run --rm --no-deps caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+# Caddy toma el Caddyfile y la landing actualizados sin cortar el HTTPS (si cambió el docker-compose.yml, se recrea)
+docker compose -f "$RAIZ/deploy/docker-compose.yml" up -d caddy
 docker compose -f "$RAIZ/deploy/docker-compose.yml" exec caddy caddy reload --config /etc/caddy/Caddyfile
 
-echo "[$(date +%T)] Listo. Web: https://\$DOMINIO/"
+echo "[$(date +%T)] Listo. Landing: https://\$DOMINIO/   App: https://\$DOMINIO/app/"
