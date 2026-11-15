@@ -36,6 +36,14 @@
 	# sesión sin configuración extra. Si el contenedor no está levantado (perfil "web"), responde 502.
 	@app path /app /app/*
 	handle @app {
+		# El cliente web de Flet (~6 MB: main.dart.js, canvaskit) solo cambia al actualizar Flet, no con nuestro
+		# código (que corre en el servidor): el navegador lo guarda un día y luego revalida con ETag. Sin esto se
+		# descarga entero en cada entrada, también al volver del login con Google.
+		@cliente {
+			path /app/*.js /app/*.mjs /app/*.wasm /app/canvaskit/* /app/assets/* /app/icons/* /app/*.png
+			not path /app/flutter_service_worker.js
+		}
+		header @cliente Cache-Control "public, max-age=86400"
 		reverse_proxy web:8551
 	}
 
