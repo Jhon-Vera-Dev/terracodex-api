@@ -1,13 +1,15 @@
 package com.terracodex.seguridad.autenticacion.application.port.input;
 
+import com.terracodex.seguridad.autenticacion.application.dto.result.CallbackGoogleResult;
+
 public interface CompletarLoginGoogleUseCase {
 
 	/**
 	 * Callback de Google. Si la cuenta no existe en terracodex, crea el usuario como OPERADOR con acceso móvil.
 	 *
 	 * @param errorGoogle {@code error} del callback (p. ej. {@code access_denied}), o {@code null}
-	 * @return {@code true} si quedó completado; {@code false} si falló (el motivo lo recibe la app al canjear)
+	 * @return si quedó completado (si falló, el motivo lo recibe la app al canjear) y el canal del inicio
 	 */
-	boolean completar(String state, String code, String errorGoogle);
+	CallbackGoogleResult completar(String state, String code, String errorGoogle);
 
 }

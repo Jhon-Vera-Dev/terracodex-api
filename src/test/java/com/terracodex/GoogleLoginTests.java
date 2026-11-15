@@ -107,7 +107,10 @@ class GoogleLoginTests {
 	void unUsuarioNuevoDeGoogleNoEntraPorWeb() throws Exception {
 		var v = verificador();
 		var id = data(inicio("WEB", v)).get("id").asString();
-		callback(id, "code-carla");
+		var callback = callback(id, "code-carla");
+		assertThat(callback).as("la app web abrió Google en la misma pestaña: vuelve a ella")
+			.hasStatus(HttpStatus.SEE_OTHER);
+		assertThat(callback.getResponse().getHeader("Location")).isEqualTo("/app/?google=ok");
 
 		assertThat(canje(id, v)).hasStatus(HttpStatus.FORBIDDEN);
 		assertThat(canje(id, v)).as("el intento ya se consumió").hasStatus(HttpStatus.UNAUTHORIZED);

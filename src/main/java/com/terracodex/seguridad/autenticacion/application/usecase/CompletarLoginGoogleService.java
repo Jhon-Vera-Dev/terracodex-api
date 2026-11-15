@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.terracodex.seguridad.autenticacion.application.dto.result.CallbackGoogleResult;
 import com.terracodex.seguridad.autenticacion.application.port.input.CompletarLoginGoogleUseCase;
 import com.terracodex.seguridad.autenticacion.application.port.output.CuentaGoogleRepositoryPort;
 import com.terracodex.seguridad.autenticacion.application.port.output.InicioGoogleRepositoryPort;
@@ -67,11 +68,15 @@ class CompletarLoginGoogleService implements CompletarLoginGoogleUseCase {
 
 	@Override
 	@Transactional
-	public boolean completar(String state, String code, String errorGoogle) {
+	public CallbackGoogleResult completar(String state, String code, String errorGoogle) {
 		var inicio = state == null ? null : inicios.findById(state).orElse(null);
 		if (inicio == null) {
-			return false;
+			return new CallbackGoogleResult(false, null);
 		}
+		return new CallbackGoogleResult(procesar(inicio, code, errorGoogle), inicio.canal());
+	}
+
+	private boolean procesar(InicioGoogle inicio, String code, String errorGoogle) {
 		if (inicio.estado() != InicioGoogle.Estado.PENDIENTE) {
 			// Recargó la página del callback: no se vuelve a canjear el código
 			return inicio.estado() == InicioGoogle.Estado.COMPLETADO;

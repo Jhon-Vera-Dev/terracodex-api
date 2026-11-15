@@ -40,6 +40,9 @@ app:
       client-secret: ${GOOGLE_CLIENT_SECRET:}
       # Debe estar en "URI de redireccionamiento autorizados" del cliente OAuth
       redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/api/auth/google/callback}
+      # A dónde vuelve el navegador al terminar un login del canal WEB (la app web abre Google en la misma
+      # pestaña). Vacío: muestra la página de "vuelve a la app", como en el móvil.
+      web-app-url: ${GOOGLE_WEB_APP_URL:/app/}
     jwt:
       emisor: terracodex-api
       # Clave HS256 de al menos 32 caracteres. Obligatoria fuera de local/dev.

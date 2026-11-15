@@ -2,6 +2,9 @@ package com.terracodex.seguridad.autenticacion.infrastructure.adapter.input.rest
 
 import java.time.Instant;
 
+import java.net.URI;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +22,7 @@ import com.terracodex.seguridad.autenticacion.infrastructure.adapter.input.rest.
 import com.terracodex.seguridad.autenticacion.infrastructure.adapter.input.rest.request.InicioGoogleRequest;
 import com.terracodex.seguridad.autenticacion.infrastructure.adapter.input.rest.response.InicioGoogleResponse;
 import com.terracodex.seguridad.autenticacion.infrastructure.adapter.input.rest.response.SesionResponse;
+import com.terracodex.seguridad.usuario.domain.model.Canal;
 import com.terracodex.shared.infrastructure.adapter.input.rest.ApiResponse;
 
 import jakarta.validation.Valid;
@@ -28,7 +32,9 @@ import jakarta.validation.Valid;
  * <ol>
  * <li>{@code POST /api/auth/google/inicio {"canal": "MOVIL", "desafio": sha256hex(verificador)}} → abre {@code url}
  * en el navegador.</li>
- * <li>Google redirige a {@code GET /api/auth/google/callback}, que responde una página de "vuelve a la app".</li>
+ * <li>Google redirige a {@code GET /api/auth/google/callback}, que responde una página de "vuelve a la app". Si el
+ * inicio es del canal WEB, redirige en cambio a la app web ({@code app.seguridad.google.web-app-url}): esta abrió
+ * Google en la misma pestaña y canjea al volver.</li>
  * <li>{@code POST /api/auth/google/sesion {"id", "verificador"}} cada 2 s: 202 mientras está pendiente, 200 con la
  * sesión (igual que {@code /api/auth/login}) cuando terminó.</li>
  * </ol>
@@ -43,11 +49,14 @@ class GoogleAuthController {
 
 	private final CanjearLoginGoogleUseCase canjear;
 
+	private final String webAppUrl;
+
 	GoogleAuthController(IniciarLoginGoogleUseCase iniciar, CompletarLoginGoogleUseCase completar,
-			CanjearLoginGoogleUseCase canjear) {
+			CanjearLoginGoogleUseCase canjear, @Value("${app.seguridad.google.web-app-url:}") String webAppUrl) {
 		this.iniciar = iniciar;
 		this.completar = completar;
 		this.canjear = canjear;
+		this.webAppUrl = webAppUrl;
 	}
 
 	@PostMapping("/inicio")
@@ -55,14 +64,24 @@ class GoogleAuthController {
 		return ApiResponse.ok(InicioGoogleResponse.from(iniciar.iniciar(request.toCommand())));
 	}
 
-	/** Lo abre el navegador del usuario: responde HTML, nunca datos de la sesión. */
+	/**
+	 * Lo abre el navegador del usuario: responde HTML (o, en el canal WEB, redirige a la app web), nunca datos de la
+	 * sesión.
+	 */
 	@GetMapping(value = "/callback", produces = MediaType.TEXT_HTML_VALUE)
-	String callback(@RequestParam(required = false) String state, @RequestParam(required = false) String code,
-			@RequestParam(required = false) String error) {
-		var ok = completar.completar(state, code, error);
-		return ok ? pagina("¡Listo!", "Ya iniciaste sesión con Google. Vuelve a la app TerraCode.")
+	ResponseEntity<String> callback(@RequestParam(required = false) String state,
+			@RequestParam(required = false) String code, @RequestParam(required = false) String error) {
+		var resultado = completar.completar(state, code, error);
+		if (resultado.canal() == Canal.WEB && !webAppUrl.isBlank()) {
+			// URL fija de la configuración: nada de la petición decide a dónde se redirige
+			return ResponseEntity.status(HttpStatus.SEE_OTHER)
+				.location(URI.create(webAppUrl + (resultado.completado() ? "?google=ok" : "?google=error")))
+				.build();
+		}
+		return ResponseEntity.ok(resultado.completado()
+				? pagina("¡Listo!", "Ya iniciaste sesión con Google. Vuelve a la app TerraCode.")
 				: pagina("No se pudo iniciar sesión",
-						"Vuelve a la app TerraCode para ver el motivo e intentarlo de nuevo.");
+						"Vuelve a la app TerraCode para ver el motivo e intentarlo de nuevo."));
 	}
 
 	@PostMapping("/sesion")
