@@ -14,6 +14,9 @@ ENV PYTHONUNBUFFERED=1 \
     FLET_WEB_APP_PATH=app \
     FLET_ASSETS_DIR=/srv/terracode/src/assets
 
+# rasterio (explorador) trae GDAL en su wheel, pero necesita libexpat del sistema; la imagen slim no la tiene
+RUN apt-get update && apt-get install -y --no-install-recommends libexpat1 && rm -rf /var/lib/apt/lists/*
+
 # Mismas versiones que el pyproject.toml del frontend ([project] + grupo "explorador"); flet-web trae el cliente
 # web (incluye GPS, mapa y WebView)
 RUN pip install --no-cache-dir "flet[web]==1.1.2" "flet-geolocator==1.1.2" "certifi>=2024.8.30" \
