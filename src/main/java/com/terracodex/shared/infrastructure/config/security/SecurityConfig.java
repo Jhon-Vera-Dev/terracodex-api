@@ -37,7 +37,8 @@ import tools.jackson.databind.json.JsonMapper;
 /**
  * API sin estado protegida con JWT (HS256). El token lo emite el módulo seguridad; aquí solo se valida.
  * <ul>
- * <li>Público: {@code POST /api/auth/login | refresh | logout}, health e info.</li>
+ * <li>Público: {@code POST /api/auth/login | refresh | logout}, login con Google ({@code /api/auth/google/**}),
+ * health e info.</li>
  * <li>Además de firma, emisor y expiración, cada token se rechaza si su sesión ({@code sid}) ya no está activa.</li>
  * <li>El resto exige token. Cada slice restringe por rol con {@code @PreAuthorize} en su controlador.</li>
  * <li>El claim {@code roles} se convierte en autoridades {@code ROLE_<rol>}.</li>
@@ -55,8 +56,10 @@ class SecurityConfig {
 			.cors(Customizer.withDefaults())
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(auth -> {
-				auth.requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/refresh", "/api/auth/logout")
+				auth.requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/refresh", "/api/auth/logout",
+						"/api/auth/google/inicio", "/api/auth/google/sesion")
 					.permitAll();
+				auth.requestMatchers(HttpMethod.GET, "/api/auth/google/callback").permitAll();
 				auth.requestMatchers("/actuator/health/**", "/actuator/info", "/error").permitAll();
 				if (consolaH2) {
 					auth.requestMatchers("/h2-console/**").permitAll();

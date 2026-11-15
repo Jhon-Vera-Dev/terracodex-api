@@ -42,3 +42,6 @@ build/
 
 ### APK generado en el VPS ###
 deploy/descargas/
+
+### Código del frontend copiado por deploy/web/publicar-web.sh ###
+deploy/web/app/

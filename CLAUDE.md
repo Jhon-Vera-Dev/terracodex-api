@@ -4,6 +4,8 @@ Java 21, Spring Boot 4.1, Spring Modulith 2.1, JPA + Flyway, JWT (HS256). Arquit
 
 Módulo `campo`: `recomendacion` (proxy a `servicio-ml/`, modelo de aptitud de cultivos en Python/FastAPI, red interna `ML_URL`) y `registro` (registros de parcela desde el móvil, tabla `registros_campo`, V3). Cada usuario ve los suyos; ADMIN/SUPERVISOR ven todos con `todos=true`.
 
+Login con Google (`seguridad.autenticacion`): `POST /api/auth/google/inicio` → navegador → `GET /api/auth/google/callback` → la app canjea con `POST /api/auth/google/sesion` (id + verificador cuyo SHA-256 envió al inicio; 202 mientras está pendiente). El primer login crea un OPERADOR móvil y lo vincula en `cuentas_google` por `sub` (V4). Config `GOOGLE_CLIENT_ID/SECRET/REDIRECT_URI`.
+
 ## Reglas de arquitectura (las verifican `ModularityTests` y `HexagonalArchitectureTests`)
 
 - Cada paquete de primer nivel bajo `com.terracodex` es un módulo de negocio (screaming architecture). `shared` es un módulo abierto con piezas transversales y no conoce a ningún módulo.

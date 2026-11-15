@@ -64,7 +64,8 @@ Pide la contraseña de `admin` y la contraseña inicial de los usuarios nuevos. 
 ## 5. Frontend (D:\TerraCode)
 
 `TERRACODE_API_URL=http://76.13.225.20` (o `https://api.tudominio.com` con dominio). La app de escritorio o móvil
-no necesita CORS; solo un build web (`flet build web`) necesita su origen en `CORS_ALLOWED_ORIGINS`.
+no necesita CORS; solo un build web estático (`flet build web`) necesitaría su origen en `CORS_ALLOWED_ORIGINS`; la versión web
+publicada aquí (sección 8) corre en el servidor y no lo necesita.
 
 ## 6. Servicio de recomendación (servicio-ml)
 
@@ -78,6 +79,50 @@ docker compose -f deploy/docker-compose.yml exec ml python -c "import urllib.req
 ```
 
 Para cambiar el modelo, reemplaza `servicio-ml/models/crop_model_v4.joblib` y reconstruye: `up -d --build ml`.
+
+## 7. Login con Google
+
+Cualquier cuenta de Google con correo verificado puede entrar. La primera vez se crea un usuario OPERADOR con
+acceso solo móvil (login sacado del correo, por ejemplo `ana.flores`). El administrador puede cambiarle roles y
+canales después. La contraseña del usuario es aleatoria y nadie la conoce: entra solo con Google, hasta que el
+admin le ponga una.
+
+1. [Google Cloud Console](https://console.cloud.google.com/) → crea un proyecto (o usa uno).
+2. APIs y servicios → **Pantalla de consentimiento de OAuth**: tipo *Externo*, nombre «TerraCode», correo de soporte,
+   alcances `openid`, `email` y `profile`. Publica la app (si queda en *Prueba*, solo entran los usuarios de prueba).
+3. APIs y servicios → **Credenciales → Crear credenciales → ID de cliente de OAuth → Aplicación web**.
+   - URI de redireccionamiento autorizados: `https://<DOMINIO>/api/auth/google/callback`
+4. Copia el ID y el secreto del cliente en `deploy/.env`:
+   ```
+   GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=GOCSPX-...
+   GOOGLE_REDIRECT_URI=https://<DOMINIO>/api/auth/google/callback
+   ```
+5. `docker compose -f deploy/docker-compose.yml up -d api`
+
+No hace falta un cliente Android ni la huella SHA-1 del APK: la app abre Google en el navegador y el backend hace el
+canje (flujo de código de autorización). Sin estas variables, «Continuar con Google» responde «no está configurado».
+
+## 8. Versión web (Flet)
+
+La misma app de D:\TerraCode corre como sitio web en la raíz del dominio (`https://api.tudominio.com/`): el
+contenedor `web` ejecuta la app en Python (Flet en modo servidor) y cada navegador se conecta por WebSocket. Caddy
+envía a `web` todo lo que no sea `/api/*`, `/actuator/health` o `/descargas/*`. Habla con la API por la red interna
+(`http://api:8080`), así que no necesita CORS.
+
+Usa el mismo zip del APK (contenido de D:\TerraCode sin `.venv`, `build` ni `.git`):
+
+```bash
+bash deploy/web/publicar-web.sh /opt/terracode-src.zip
+docker compose -f deploy/docker-compose.yml --profile web logs -f web
+```
+
+- El servicio tiene el perfil `web`: un `up -d --build` sin `--profile web` no lo toca. Para actualizarlo, vuelve a
+  correr el script con el zip nuevo.
+- El GPS del navegador (Clima, Nuevo registro) solo funciona con HTTPS, o sea con `DOMINIO` configurado.
+- Cada pestaña abierta es una sesión en el servidor (unos pocos MB de RAM); el límite del contenedor es 512 MB.
+- Los usuarios creados con Google tienen solo acceso móvil: en la web el login con Google les responde que no tienen
+  acceso web hasta que el administrador les active `isWeb`.
 
 ## Actualizar
 
