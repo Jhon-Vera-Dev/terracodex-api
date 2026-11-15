@@ -16,13 +16,13 @@ command -v unzip >/dev/null || { apt-get update -qq && apt-get install -y -qq un
 echo "[$(date +%T)] Preparando el código en $APP..."
 rm -rf "$APP" && mkdir -p "$APP"
 unzip -q "$ZIP" -d "$APP"
-if [ ! -f "$APP/src/main.py" ]; then
-  echo "El zip no tiene src/main.py en la raíz: comprime el contenido de D:\TerraCode, no la carpeta." >&2
+if [ ! -f "$APP/src/main.py" ] || [ ! -f "$APP/models/crop_model_v4.joblib" ]; then
+  echo "El zip no tiene src/main.py y models/crop_model_v4.joblib en la raíz: comprime el contenido de D:\TerraCode." >&2
   exit 1
 fi
 
 echo "[$(date +%T)] Construyendo y arrancando el contenedor web..."
-docker compose -f "$RAIZ/deploy/docker-compose.yml" --profile web up -d --build web
+docker compose -f "$RAIZ/deploy/docker-compose.yml" --profile web up -d --build web explorador
 # Primero valida el Caddyfile con la misma imagen: si tiene un error, para aquí y Caddy sigue con el anterior
 docker compose -f "$RAIZ/deploy/docker-compose.yml" run --rm --no-deps caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
 # Caddy toma el Caddyfile y la landing actualizados sin cortar el HTTPS (si cambió el docker-compose.yml, se recrea)

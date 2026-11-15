@@ -32,7 +32,8 @@ $appZip = Join-Path $tmp "terracode-src.zip"
 Write-Host "Empaquetando la API ($(git -C $Api log --oneline -1))..."
 git -C $Api -c core.autocrlf=false archive --format=tar.gz -o $apiTar HEAD
 Write-Host "Empaquetando el frontend ($(git -C $Frontend log --oneline -1))..."
-git -C $Frontend -c core.autocrlf=false archive --format=zip -o $appZip HEAD
+# Solo lo que usan el APK y la web (sin data/ ni los modelos viejos: pesan ~200 MB)
+git -C $Frontend -c core.autocrlf=false archive --format=zip -o $appZip HEAD src pyproject.toml README.md models/crop_model_v4.joblib
 
 Write-Host "Subiendo a $Servidor..."
 scp $apiTar $appZip "${Servidor}:/tmp/"

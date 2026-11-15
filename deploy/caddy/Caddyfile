@@ -40,8 +40,25 @@
 	}
 
 	# Landing (deploy/landing, estática) en la raíz del dominio
+	# /privacidad sirve privacidad.html (URL de la política para Google)
 	handle {
 		root * /srv/landing
+		try_files {path} {path}.html
 		file_server
 	}
+}
+
+# Explorador de TerraSprout en su propio subdominio. Muestra sus páginas en iframes (WebView): SAMEORIGIN, no DENY.
+{$EXPLORADOR_DOMINIO} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	reverse_proxy explorador:8551
 }

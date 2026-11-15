@@ -86,11 +86,33 @@ services:
     environment:
       # Habla con la API por la red interna (sin salir a internet ni pasar por Caddy)
       TERRACODE_API_URL: http://api:8080
+      # Tarjeta "Explorador" del home (vacío: no se muestra)
+      TERRACODE_EXPLORADOR_URL: ${EXPLORADOR_DOMINIO:-}
       TZ: America/Lima
     deploy:
       resources:
         limits:
           memory: 512m
+
+  # Explorador de TerraSprout (src/explorador.py: globo, mapa, datos NASA, asistente). Misma imagen que "web",
+  # en la raíz de su propio subdominio (EXPLORADOR_DOMINIO) porque usa rutas absolutas (/mapa, /earth3d.html).
+  explorador:
+    profiles: ["web"]
+    build:
+      context: ./web
+    restart: unless-stopped
+    command: ["python", "explorador.py"]
+    environment:
+      FLET_WEB_APP_PATH: ""
+      TZ: America/Lima
+      # Opcionales del explorador: asistente con Gemini y mapa de Google (sin ellos usa OpenStreetMap)
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      MAP_PROVIDER: ${MAP_PROVIDER:-OpenStreetMap}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+    deploy:
+      resources:
+        limits:
+          memory: 1024m
 
   caddy:
     image: caddy:2.10-alpine
@@ -104,6 +126,8 @@ services:
     environment:
       # Vacío: sirve por HTTP en la IP (solo para probar). Con dominio: HTTPS automático (Let's Encrypt).
       DOMINIO: ${DOMINIO:-:80}
+      # Subdominio del explorador (registro A a la IP del VPS). Vacío: explorador.localhost (no se publica)
+      EXPLORADOR_DOMINIO: ${EXPLORADOR_DOMINIO:-explorador.localhost}
     volumes:
       # Carpeta y no el archivo suelto: así Caddy ve el Caddyfile nuevo tras un git pull o un tar
       - ./caddy:/etc/caddy:ro

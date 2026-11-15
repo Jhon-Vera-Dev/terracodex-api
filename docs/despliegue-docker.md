@@ -111,6 +111,12 @@ canje (flujo de código de autorización). Sin estas variables, «Continuar con 
   en modo servidor) y cada navegador se conecta por WebSocket. Habla con la API por la red interna
   (`http://api:8080`), así que no necesita CORS.
 
+- `https://<EXPLORADOR_DOMINIO>/`: el explorador de TerraSprout (`src/explorador.py`: globo, mapa, datos NASA,
+  asistente). Va en su propio subdominio porque usa rutas absolutas. Crea el registro `A` (por ejemplo
+  `explorador` → IP del VPS) y pon `EXPLORADOR_DOMINIO=explorador.tudominio.com` en `deploy/.env`. Con eso el home
+  de la app web muestra la tarjeta «Explorador». Opcionales: `GEMINI_API_KEY` (asistente) y `MAP_PROVIDER=Google`
+  con `GOOGLE_MAPS_API_KEY`. Usa hasta 1 GB de RAM; el APK no lo incluye.
+
 Caddy lee su configuración de la carpeta `deploy/caddy`, montada entera: así ve el `Caddyfile` nuevo después de un
 `git pull` o de descomprimir el código encima. Para aplicar cambios del Caddyfile o de la landing:
 `docker compose -f deploy/docker-compose.yml exec caddy caddy reload --config /etc/caddy/Caddyfile`.
