@@ -24,6 +24,12 @@ spring:
 
 app:
   zona-horaria: America/Lima
+  ml:
+    # servicio-ml (modelo de recomendación de cultivos). En Docker: http://ml:8000 (red interna)
+    url: ${ML_URL:http://localhost:8000}
+    api-key: ${ML_API_KEY:}
+    # La primera consulta de un punto llama a NASA POWER (30 años de datos) y puede tardar
+    timeout: ${ML_TIMEOUT:90s}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
   seguridad:

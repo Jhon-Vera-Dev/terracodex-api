@@ -39,6 +39,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      ml:
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: prod
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-terracodex}
@@ -48,10 +50,26 @@ services:
       ADMIN_LOGIN: ${ADMIN_LOGIN:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:4200}
+      ML_URL: http://ml:8000
+      ML_API_KEY: ${ML_API_KEY:?Define ML_API_KEY en deploy/.env}
     deploy:
       resources:
         limits:
           memory: 1024m
+
+  # Modelo de recomendación de cultivos (servicio-ml). Solo lo ve la API: no publica puertos.
+  ml:
+    build:
+      context: ../servicio-ml
+    restart: unless-stopped
+    environment:
+      ML_API_KEY: ${ML_API_KEY}
+      # Nominatim (OpenStreetMap) pide identificar la aplicación
+      NOMINATIM_USER_AGENT: ${NOMINATIM_USER_AGENT:-terracodex-servicio-ml/1.0}
+    deploy:
+      resources:
+        limits:
+          memory: 768m
 
   caddy:
     image: caddy:2.10-alpine

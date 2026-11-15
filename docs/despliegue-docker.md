@@ -18,7 +18,8 @@ cd /opt/terracodex
 cp deploy/.env.ejemplo deploy/.env
 openssl rand -base64 32      # → POSTGRES_PASSWORD
 openssl rand -base64 48      # → JWT_SECRET
-nano deploy/.env             # completa POSTGRES_PASSWORD, JWT_SECRET, ADMIN_PASSWORD (y DOMINIO si ya lo tienes)
+openssl rand -hex 32         # → ML_API_KEY (clave entre la API y servicio-ml)
+nano deploy/.env             # completa POSTGRES_PASSWORD, JWT_SECRET, ML_API_KEY, ADMIN_PASSWORD (y DOMINIO si ya lo tienes)
 chmod 600 deploy/.env
 
 docker compose -f deploy/docker-compose.yml up -d --build
@@ -65,12 +66,25 @@ Pide la contraseña de `admin` y la contraseña inicial de los usuarios nuevos. 
 `TERRACODE_API_URL=http://76.13.225.20` (o `https://api.tudominio.com` con dominio). La app de escritorio o móvil
 no necesita CORS; solo un build web (`flet build web`) necesita su origen en `CORS_ALLOWED_ORIGINS`.
 
+## 6. Servicio de recomendación (servicio-ml)
+
+`deploy/docker-compose.yml` levanta también `ml` (Python + `crop_model_v4.joblib`). Solo lo ve la API por la red
+interna (`ML_URL=http://ml:8000`), con la clave `ML_API_KEY`. No publica puertos ni pasa por Caddy. Usa unos
+400 MB de RAM. La primera recomendación de cada punto tarda hasta 1 minuto (NASA POWER) y luego queda en caché.
+
+```bash
+docker compose -f deploy/docker-compose.yml logs -f ml        # "Application startup complete"
+docker compose -f deploy/docker-compose.yml exec ml python -c "import urllib.request;print(urllib.request.urlopen('http://127.0.0.1:8000/health').read())"
+```
+
+Para cambiar el modelo, reemplaza `servicio-ml/models/crop_model_v4.joblib` y reconstruye: `up -d --build ml`.
+
 ## Actualizar
 
 ```bash
 cd /opt/terracodex
 git pull
-docker compose -f deploy/docker-compose.yml up -d --build api
+docker compose -f deploy/docker-compose.yml up -d --build api ml
 ```
 
 Las migraciones Flyway se aplican al arrancar y no se deshacen: para revertir código, una migración nueva debe ser
