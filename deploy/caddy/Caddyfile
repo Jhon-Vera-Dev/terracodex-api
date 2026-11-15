@@ -56,14 +56,15 @@
 	}
 }
 
-# Explorador de TerraSprout en su propio subdominio. Muestra sus páginas en iframes (WebView): SAMEORIGIN, no DENY.
+# Explorador de TerraSprout en su propio subdominio. Muestra sus páginas en iframes (WebView), y la landing del
+# dominio principal abre su asistente en un iframe: se permite enmarcarlo desde sí mismo y desde {$DOMINIO}.
 {$EXPLORADOR_DOMINIO} {
 	encode zstd gzip
 
 	header {
 		Strict-Transport-Security "max-age=31536000"
 		X-Content-Type-Options "nosniff"
-		X-Frame-Options "SAMEORIGIN"
+		Content-Security-Policy "frame-ancestors 'self' https://{$DOMINIO}"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		-Server
 	}
