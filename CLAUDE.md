@@ -2,6 +2,8 @@
 
 Java 21, Spring Boot 4.1, Spring Modulith 2.1, JPA + Flyway, JWT (HS256). Arquitectura copiada de `D:\desarrollos\app-zonal-api`: `shared` y el módulo `seguridad` (features usuario, rol, menu, autenticacion). Roles base: ADMIN, SUPERVISOR, OPERADOR.
 
+Módulo `campo`: `recomendacion` (proxy a `servicio-ml/`, modelo de aptitud de cultivos en Python/FastAPI, red interna `ML_URL`) y `registro` (registros de parcela desde el móvil, tabla `registros_campo`, V3). Cada usuario ve los suyos; ADMIN/SUPERVISOR ven todos con `todos=true`.
+
 ## Reglas de arquitectura (las verifican `ModularityTests` y `HexagonalArchitectureTests`)
 
 - Cada paquete de primer nivel bajo `com.terracodex` es un módulo de negocio (screaming architecture). `shared` es un módulo abierto con piezas transversales y no conoce a ningún módulo.

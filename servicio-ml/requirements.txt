@@ -1,0 +1,9 @@
+# Mismas versiones con las que se entrenó crop_model_v4.joblib (rama develop, pyproject.toml):
+# un scikit-learn distinto puede no cargar el modelo o predecir distinto.
+scikit-learn==1.7.2
+pandas==2.3.3
+numpy==2.2.6
+joblib==1.6.0
+httpx>=0.28.1,<1
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
