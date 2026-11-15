@@ -109,7 +109,8 @@ class CompletarLoginGoogleService implements CompletarLoginGoogleUseCase {
 			.orElseThrow(() -> new DomainException("No se pueden registrar usuarios nuevos: falta el rol " + ROL_NUEVOS));
 		// Contraseña aleatoria que nadie conoce: la cuenta solo entra con Google hasta que el admin le ponga una
 		var contrasena = codificador.cifrar(Base64.getEncoder().encodeToString(aleatorio()));
-		var usuario = Usuario.crear(loginDisponible(perfil), perfil.descripcion(), contrasena, perfil.avatar(), false,
+		// Web y móvil: cualquier cuenta de Google entra por los dos canales
+		var usuario = Usuario.crear(loginDisponible(perfil), perfil.descripcion(), contrasena, perfil.avatar(), true,
 				true, Set.of(rol.id()));
 		var id = usuarios.save(usuario);
 		cuentas.save(new CuentaGoogle(perfil.sub(), id, perfil.email(), clock.instant()));

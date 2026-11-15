@@ -82,7 +82,7 @@ class GoogleLoginTests {
 		assertThat(usuario.get("login").asString()).isEqualTo("ana.flores");
 		assertThat(usuario.get("descripcion").asString()).isEqualTo("Persona ana.flores");
 		assertThat(usuario.get("isMovil").asBoolean()).isTrue();
-		assertThat(usuario.get("isWeb").asBoolean()).isFalse();
+		assertThat(usuario.get("isWeb").asBoolean()).isTrue();
 		assertThat(usuario.get("roles").get(0).asString()).isEqualTo("OPERADOR");
 
 		assertThat(canje(id, verificador)).as("se canjea una sola vez").hasStatus(HttpStatus.UNAUTHORIZED);
@@ -104,7 +104,7 @@ class GoogleLoginTests {
 	}
 
 	@Test
-	void unUsuarioNuevoDeGoogleNoEntraPorWeb() throws Exception {
+	void unUsuarioNuevoDeGoogleEntraPorWeb() throws Exception {
 		var v = verificador();
 		var id = data(inicio("WEB", v)).get("id").asString();
 		var callback = callback(id, "code-carla");
@@ -112,7 +112,7 @@ class GoogleLoginTests {
 			.hasStatus(HttpStatus.SEE_OTHER);
 		assertThat(callback.getResponse().getHeader("Location")).isEqualTo("/app/?google=ok");
 
-		assertThat(canje(id, v)).hasStatus(HttpStatus.FORBIDDEN);
+		assertThat(canje(id, v)).hasStatus(HttpStatus.OK);
 		assertThat(canje(id, v)).as("el intento ya se consumió").hasStatus(HttpStatus.UNAUTHORIZED);
 	}
 

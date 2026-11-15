@@ -30,13 +30,13 @@ import jakarta.validation.Valid;
 /**
  * Login con Google (públicos). La app:
  * <ol>
- * <li>{@code POST /api/auth/google/inicio {"canal": "MOVIL", "desafio": sha256hex(verificador)}} → abre {@code url}
- * en el navegador.</li>
- * <li>Google redirige a {@code GET /api/auth/google/callback}, que responde una página de "vuelve a la app". Si el
+ * <li>{@code POST /api/auth/google/inicio} con el canal y el desafío (SHA-256 en hexadecimal del verificador) → abre
+ * la URL devuelta en el navegador.</li>
+ * <li>Google redirige a {@code GET /api/auth/google/callback}, que responde una página de vuelve a la app. Si el
  * inicio es del canal WEB, redirige en cambio a la app web ({@code app.seguridad.google.web-app-url}): esta abrió
  * Google en la misma pestaña y canjea al volver.</li>
- * <li>{@code POST /api/auth/google/sesion {"id", "verificador"}} cada 2 s: 202 mientras está pendiente, 200 con la
- * sesión (igual que {@code /api/auth/login}) cuando terminó.</li>
+ * <li>{@code POST /api/auth/google/sesion} con el id y el verificador, cada 2 s: 202 mientras está pendiente, 200
+ * con la sesión (igual que {@code /api/auth/login}) cuando terminó.</li>
  * </ol>
  */
 @RestController

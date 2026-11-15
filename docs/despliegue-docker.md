@@ -83,7 +83,7 @@ Para cambiar el modelo, reemplaza `servicio-ml/models/crop_model_v4.joblib` y re
 ## 7. Login con Google
 
 Cualquier cuenta de Google con correo verificado puede entrar. La primera vez se crea un usuario OPERADOR con
-acceso solo móvil (login sacado del correo, por ejemplo `ana.flores`). El administrador puede cambiarle roles y
+acceso web y móvil (login sacado del correo, por ejemplo `ana.flores`). El administrador puede cambiarle roles y
 canales después. La contraseña del usuario es aleatoria y nadie la conoce: entra solo con Google, hasta que el
 admin le ponga una.
 
@@ -132,8 +132,7 @@ docker compose -f deploy/docker-compose.yml --profile web logs -f web
   correr el script con el zip nuevo.
 - El GPS del navegador (Clima, Nuevo registro) solo funciona con HTTPS, o sea con `DOMINIO` configurado.
 - Cada pestaña abierta es una sesión en el servidor (unos pocos MB de RAM); el límite del contenedor es 512 MB.
-- Los usuarios creados con Google tienen solo acceso móvil: en la web el login con Google les responde que no tienen
-  acceso web hasta que el administrador les active `isWeb`.
+- Cualquier cuenta de Google entra también en la web (el usuario se crea con acceso web y móvil).
 
 ## Actualizar
 

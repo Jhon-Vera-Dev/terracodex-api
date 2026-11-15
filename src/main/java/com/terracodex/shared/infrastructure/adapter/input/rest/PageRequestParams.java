@@ -16,6 +16,8 @@ import jakarta.validation.constraints.Size;
  * &#64;GetMapping
  * ApiResponse&lt;PageResponse&lt;X&gt;&gt; listar(&#64;Valid PageRequestParams pagina, ...) {
  *     var query = pagina.toQuery("descripcion", Set.of("descripcion", "estado"));
+ *     ...
+ * }
  * </pre>
  */
 public record PageRequestParams(@Min(0) Integer page, @Min(1) @Max(PageQuery.MAX_SIZE) Integer size,
