@@ -1,7 +1,6 @@
-# Versión web de la app TerraCode (Flet) servida por Python: cada navegador abre una sesión por WebSocket y la
-# lógica corre en este contenedor. Caddy la publica en https://<DOMINIO>/app/.
-#
-# La misma imagen corre el explorador de TerraSprout (src/explorador.py) en el servicio "explorador".
+# Explorador de TerraSprout (src/explorador.py, Flet) servido por Python: cada navegador abre una sesión por
+# WebSocket. Corre en el servicio "explorador" con FLET_WEB_APP_PATH vacío. (La app TerraCode web ya no usa esta
+# imagen: es estática y la sirve Caddy en /app/.)
 # El código del frontend (D:\TerraCode) lo deja deploy/web/publicar-web.sh en deploy/web/app (no va al repo).
 FROM python:3.12-slim
 

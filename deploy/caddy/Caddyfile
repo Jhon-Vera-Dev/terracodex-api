@@ -32,19 +32,15 @@
 		file_server
 	}
 
-	# App TerraCode en el navegador (contenedor web, Flet, servida bajo /app/). Caddy pasa el WebSocket de cada
-	# sesión sin configuración extra. Si el contenedor no está levantado (perfil "web"), responde 502.
-	@app path /app /app/*
-	handle @app {
-		# El cliente web de Flet (~6 MB: main.dart.js, canvaskit) solo cambia al actualizar Flet, no con nuestro
-		# código (que corre en el servidor): el navegador lo guarda un día y luego revalida con ETag. Sin esto se
-		# descarga entero en cada entrada, también al volver del login con Google.
-		@cliente {
-			path /app/*.js /app/*.mjs /app/*.wasm /app/canvaskit/* /app/assets/* /app/icons/* /app/*.png
-			not path /app/flutter_service_worker.js
-		}
-		header @cliente Cache-Control "public, max-age=86400"
-		reverse_proxy web:8551
+	# App TerraCode en el navegador: HTML/JS estático (web/ del frontend, copiado por deploy/web/publicar-web.sh)
+	# que habla con /api en este mismo dominio. Las rutas internas van con # (#/registros), así que todo es
+	# index.html y sus pocos archivos. no-cache: el navegador revalida con ETag y toma al instante cada versión.
+	redir /app /app/ 308
+	handle_path /app/* {
+		root * /srv/web/app/web
+		try_files {path} /index.html
+		header Cache-Control "no-cache"
+		file_server
 	}
 
 	# Landing (deploy/landing, estática) en la raíz del dominio

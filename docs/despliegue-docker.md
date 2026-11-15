@@ -103,13 +103,13 @@ admin le ponga una.
 No hace falta un cliente Android ni la huella SHA-1 del APK: la app abre Google en el navegador y el backend hace el
 canje (flujo de código de autorización). Sin estas variables, «Continuar con Google» responde «no está configurado».
 
-## 8. Landing y versión web (Flet)
+## 8. Landing, versión web y explorador
 
 - `https://<DOMINIO>/`: landing estática (`deploy/landing`, copia adaptada de la de TerraSprout). Caddy la sirve
   directo desde la carpeta, sin contenedor. Sus botones llevan a la app (`/app/`) y al APK (`/descargas/`).
-- `https://<DOMINIO>/app/`: la app de D:\TerraCode en el navegador. El contenedor `web` la ejecuta en Python (Flet
-  en modo servidor) y cada navegador se conecta por WebSocket. Habla con la API por la red interna
-  (`http://api:8080`), así que no necesita CORS.
+- `https://<DOMINIO>/app/`: la app TerraCode en el navegador. Es HTML/JS estático (carpeta `web/` de D:\TerraCode,
+  sin compilación) que Caddy sirve directo y que llama a `/api` en el mismo dominio, así que no necesita CORS ni
+  contenedor. Pesa unas decenas de KB; el APK sigue siendo la app Flet de `src/`.
 
 - `https://<EXPLORADOR_DOMINIO>/`: el explorador de TerraSprout (`src/explorador.py`: globo, mapa, datos NASA,
   asistente). Va en su propio subdominio porque usa rutas absolutas. Crea el registro `A` (por ejemplo
