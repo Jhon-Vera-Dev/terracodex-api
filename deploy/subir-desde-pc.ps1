@@ -1,4 +1,4 @@
-# Despliega desde la PC (Windows) al VPS sin git pull en el servidor: empaqueta el último commit de la API y del
+﻿# Despliega desde la PC (Windows) al VPS sin git pull en el servidor: empaqueta el último commit de la API y del
 # frontend, los sube por scp y los aplica por ssh.
 #
 #   powershell -ExecutionPolicy Bypass -File D:\terracodex-api\deploy\subir-desde-pc.ps1
@@ -13,7 +13,8 @@ param(
     [string]$Api = "D:\terracodex-api",
     [string]$Frontend = "D:\TerraCode",
     [switch]$Apk,
-    [switch]$SoloWeb
+    [switch]$SoloWeb,
+    [int]$Intentos = 4
 )
 $ErrorActionPreference = "Stop"
 
@@ -35,9 +36,26 @@ Write-Host "Empaquetando el frontend ($(git -C $Frontend log --oneline -1))..."
 # Solo lo que usan el APK y la web (sin data/ ni los modelos viejos: pesan ~200 MB)
 git -C $Frontend -c core.autocrlf=false archive --format=zip -o $appZip HEAD src web pyproject.toml README.md models/crop_model_v4.joblib
 
+# La conexión al VPS a veces se corta: se reintenta (subir y aplicar se pueden repetir sin problema)
+$opcionesSsh = @("-o", "ConnectTimeout=20", "-o", "ServerAliveInterval=15", "-o", "ServerAliveCountMax=4")
+# $SoloConexion: ssh devuelve 255 si falla la conexión; otro código es un error del despliegue y no se reintenta
+function Reintentar([string]$nombre, [scriptblock]$accion, [switch]$SoloConexion) {
+    for ($intento = 1; $intento -le $Intentos; $intento++) {
+        & $accion
+        if ($LASTEXITCODE -eq 0) { return }
+        if ($SoloConexion -and $LASTEXITCODE -ne 255) {
+            throw "El despliegue falló en el servidor (revisa el mensaje de arriba)"
+        }
+        if ($intento -lt $Intentos) {
+            Write-Warning "$nombre falló (intento $intento de $Intentos); se reintenta en 10 s..."
+            Start-Sleep -Seconds 10
+        }
+    }
+    throw "$nombre falló $Intentos veces: revisa tu conexión a internet"
+}
+
 Write-Host "Subiendo a $Servidor..."
-scp $apiTar $appZip "${Servidor}:/tmp/"
-if ($LASTEXITCODE -ne 0) { throw "scp falló" }
+Reintentar "La subida (scp)" { scp @opcionesSsh $apiTar $appZip "${Servidor}:/tmp/" }
 
 $pasos = @(
     "set -e",
@@ -51,6 +69,5 @@ if ($Apk) { $pasos += "bash deploy/apk/construir-apk.sh /tmp/terracode-src.zip" 
 $pasos += "docker compose -f deploy/docker-compose.yml --profile web ps"
 
 Write-Host "Aplicando en el servidor..."
-ssh $Servidor ($pasos -join " && ")
-if ($LASTEXITCODE -ne 0) { throw "El despliegue falló en el servidor (revisa el mensaje de arriba)" }
+Reintentar "El despliegue en el servidor (ssh)" { ssh @opcionesSsh $Servidor ($pasos -join " && ") } -SoloConexion
 Write-Host "Listo."
