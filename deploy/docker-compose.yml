@@ -86,6 +86,11 @@ services:
     environment:
       FLET_WEB_APP_PATH: ""
       TZ: America/Lima
+      # Uvicorn solo cree el X-Forwarded-Proto de Caddy si viene de una IP de confianza (por defecto 127.0.0.1, y
+      # Caddy es otro contenedor). Sin esto el explorador se cree en http:// y arma con http las URLs de sus WebView
+      # (landing, cultivos 3D): el navegador las bloquea en la página https y se ven en blanco. El puerto 8551 no se
+      # publica: solo Caddy llega a este contenedor.
+      FORWARDED_ALLOW_IPS: "*"
       # Opcionales del explorador: asistente con Gemini y mapa de Google (sin ellos usa OpenStreetMap)
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       MAP_PROVIDER: ${MAP_PROVIDER:-OpenStreetMap}
